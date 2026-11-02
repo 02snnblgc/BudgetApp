@@ -1,1 +1,45 @@
+name: Build Android APK
 
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Cordova CLI
+        run: npm install -g cordova@12.0.0
+
+      - name: Initialize Cordova Project
+        run: |
+          cordova create myapp com.butce.app ButceTakip
+          cd myapp
+          cordova platform add android@12.0.0 --nosave
+
+      - name: Copy Web Assets
+        run: |
+          rm -rf myapp/www/*
+          cp -r index.html myapp/www/
+          cp -r css myapp/www/
+          cp -r js myapp/www/
+          cp -r assets myapp/www/
+
+      - name: Build Android Debug APK
+        run: |
+          cd myapp
+          cordova build android --debug --no-telemetry
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ButceTakip-APK
+          path: myapp/platforms/android/app/build/outputs/apk/debug/app-debug.apk
