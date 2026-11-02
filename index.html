@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark" data-pastel-theme="pastel-blue">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bütçe & Harcama Takibi</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- PDF ve Excel Aktarımı İçin Kütüphaneler -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+
+    <!-- Giriş / Kayıt Ekranı (Auth Overlay) -->
+    <div id="auth-screen" class="modal-overlay">
+        <div class="modal-card">
+            <h2>Giriş Yap / Hesap Oluştur</h2>
+            <div class="profile-pic-container">
+                <img id="avatar-preview" src="assets/icons/app-icon.png" alt="Profil Fotosu" onerror="this.src='https://via.placeholder.com/80?text=Profil'">
+                <input type="file" id="avatar-input" accept="image/*">
+            </div>
+            <input type="text" id="username" placeholder="Kullanıcı Adı">
+            <input type="password" id="password" placeholder="Parola">
+            <button class="btn btn-primary" onclick="App.login()">Sisteme Giriş Yap</button>
+        </div>
+    </div>
+
+    <!-- Ana Uygulama Düzeni -->
+    <div id="app-container" class="hidden">
+        
+        <!-- Üst Bar / Header -->
+        <header class="app-header">
+            <div class="user-info">
+                <img id="user-avatar" src="" alt="Avatar">
+                <span id="user-display-name">Kullanıcı</span>
+            </div>
+            <div class="header-actions">
+                <button onclick="App.toggleThemeMode()" title="Tema Değiştir (Açık/Koyu)">🌓</button>
+                <select id="pastel-select" onchange="App.changePastelTheme(this.value)">
+                    <option value="pastel-blue">Mavi Pastel</option>
+                    <option value="pastel-green">Yeşil Pastel</option>
+                    <option value="pastel-rose">Gül Pastel</option>
+                    <option value="pastel-purple">Mor Pastel</option>
+                    <option value="pastel-orange">Turuncu Pastel</option>
+                </select>
+                <button onclick="App.logout()" title="Çıkış Yap">🚪</button>
+            </div>
+        </header>
+
+        <!-- Dönem Seçimi Barı -->
+        <section class="period-navigator card">
+            <button onclick="App.changeMonth(-1)">&lt; Önceki Ay</button>
+            <h3 id="current-period-label">Ocak 2026</h3>
+            <button onclick="App.changeMonth(1)">Sonraki Ay &gt;</button>
+        </section>
+
+        <!-- Finansal Özet Tablosu -->
+        <section class="summary-cards">
+            <div class="card income">
+                <h4>Toplam Gelir</h4>
+                <p id="total-income">0.00 TL</p>
+            </div>
+            <div class="card expense">
+                <h4>Toplam Gider</h4>
+                <p id="total-expense">0.00 TL</p>
+            </div>
+            <div class="card balance">
+                <h4>Net Bakiye</h4>
+                <p id="net-balance">0.00 TL</p>
+            </div>
+        </section>
+
+        <!-- Arama ve Eylem Butonları -->
+        <section class="actions-bar card">
+            <input type="text" id="search-input" placeholder="Kayıtlarda ara (tür, not, miktar)..." oninput="App.filterRecords()">
+            <div class="btn-group">
+                <button class="btn btn-success" onclick="App.openRecordModal('income')">+ Gelir Ekle</button>
+                <button class="btn btn-danger" onclick="App.openRecordModal('expense')">+ Gider Ekle</button>
+                <button class="btn btn-secondary" onclick="App.exportPDF()">PDF Aktar</button>
+                <button class="btn btn-secondary" onclick="App.exportExcel()">Excel Aktar</button>
+                <button class="btn btn-outline" onclick="App.exportBackup()">Yedek İndir</button>
+                <label class="btn btn-outline file-upload">
+                    Yedek Yükle <input type="file" id="backup-file" onchange="App.importBackup(event)" accept=".json">
+                </label>
+            </div>
+        </section>
+
+        <!-- Dönem Notu -->
+        <section class="card period-note-section">
+            <h4>Bu Ay İçin Özel Notlar</h4>
+            <textarea id="period-note" placeholder="Bu harcama dönemi için hatırlatma veya not ekleyin..." onchange="App.savePeriodNote()"></textarea>
+        </section>
+
+        <!-- Dönem Karşılaştırma Modülü -->
+        <section class="card">
+            <details>
+                <summary><b>Dönem Karşılaştırma Alanı</b></summary>
+                <div class="compare-box">
+                    <select id="compare-period-select"></select>
+                    <button class="btn btn-primary" onclick="App.comparePeriods()">Karşılaştır</button>
+                </div>
+                <div id="compare-result" class="compare-result-box"></div>
+            </details>
+        </section>
+
+        <!-- Kayıt Listesi -->
+        <section class="card">
+            <h4>Dönem Gelir ve Gider Kayıtları</h4>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tip</th>
+                            <th>Kategori / Tür</th>
+                            <th>Miktar</th>
+                            <th>Son Ödeme / Tarih</th>
+                            <th>Not</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="records-list">
+                        <!-- JS dinamik dolduracak -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- Ekle/Düzenle Modal -->
+    <div id="record-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h3 id="modal-title">Kayıt Ekle</h3>
+            <form id="record-form" onsubmit="App.handleRecordSubmit(event)">
+                <input type="hidden" id="record-id">
+                <input type="hidden" id="record-type">
+
+                <label>Kategori / Tür:</label>
+                <select id="record-category" required></select>
+
+                <label>Miktar (TL):</label>
+                <input type="number" step="0.01" id="record-amount" placeholder="0.00" required>
+
+                <label>Tarih / Son Ödeme Tarihi:</label>
+                <input type="date" id="record-date" required>
+
+                <label>Not:</label>
+                <textarea id="record-note" placeholder="Ek açıklama..."></textarea>
+
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                    <button type="button" class="btn btn-secondary" onclick="App.closeRecordModal()">İptal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Alarm / Hatırlatıcı Ses -->
+    <audio id="alarm-sound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
+
+    <script src="js/alarm.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

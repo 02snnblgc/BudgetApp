@@ -1,0 +1,81 @@
+/* Pastel Temalar ve Mod Değişkenleri */
+:root {
+    --bg-color: #f4f6f9;
+    --card-bg: #ffffff;
+    --text-color: #333333;
+    --border-color: #e0e0e0;
+    --primary: #4a90e2;
+    --income-color: #2ecc71;
+    --expense-color: #e74c3c;
+}
+
+[data-theme="dark"] {
+    --bg-color: #121212;
+    --card-bg: #1e1e1e;
+    --text-color: #e0e0e0;
+    --border-color: #333333;
+}
+
+/* 5 Açık Pastel Renk Temaları */
+[data-pastel-theme="pastel-blue"] { --primary: #a0c4ff; --primary-btn: #70a6ff; }
+[data-pastel-theme="pastel-green"] { --primary: #b9fbc0; --primary-btn: #74f783; }
+[data-pastel-theme="pastel-rose"] { --primary: #ffc6ff; --primary-btn: #ff85ff; }
+[data-pastel-theme="pastel-purple"] { --primary: #d0d1ff; --primary-btn: #9c9eff; }
+[data-pastel-theme="pastel-orange"] { --primary: #ffd6a5; --primary-btn: #ffb55b; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+body { background-color: var(--bg-color); color: var(--text-color); padding: 15px; transition: all 0.3s ease; }
+
+.hidden { display: none !important; }
+
+.card { background-color: var(--card-bg); border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+
+/* Header & Profil */
+.app-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: var(--card-bg); padding: 10px 15px; border-radius: 12px; border: 1px solid var(--border-color); }
+.user-info { display: flex; align-items: center; gap: 10px; font-weight: bold; }
+.user-info img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+.header-actions { display: flex; gap: 8px; align-items: center; }
+
+/* Dönem Navigasyonu */
+.period-navigator { display: flex; justify-content: space-between; align-items: center; }
+.period-navigator button { background: var(--primary); border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+
+/* Finans Kartları */
+.summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; }
+.summary-cards .card { text-align: center; }
+.summary-cards .income p { color: var(--income-color); font-size: 1.2rem; font-weight: bold; }
+.summary-cards .expense p { color: var(--expense-color); font-size: 1.2rem; font-weight: bold; }
+.summary-cards .balance p { font-size: 1.2rem; font-weight: bold; }
+
+/* Eylemler ve Arama */
+.actions-bar { display: flex; flex-direction: column; gap: 10px; }
+.actions-bar input { padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); }
+.btn-group { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* Butonlar */
+.btn { padding: 8px 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+.btn-primary { background-color: var(--primary-btn); color: #000; }
+.btn-success { background-color: var(--income-color); color: #fff; }
+.btn-danger { background-color: var(--expense-color); color: #fff; }
+.btn-secondary { background-color: #7f8c8d; color: #fff; }
+.btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-color); }
+.file-upload { display: inline-block; cursor: pointer; }
+.file-upload input { display: none; }
+
+/* Tablo */
+.table-responsive { overflow-x: auto; margin-top: 10px; }
+table { width: 100%; border-collapse: collapse; text-align: left; }
+th, td { padding: 10px; border-bottom: 1px solid var(--border-color); }
+th { background-color: rgba(0,0,0,0.03); }
+
+/* Modallar */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+.modal-card { background: var(--card-bg); width: 90%; max-width: 400px; padding: 20px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px; }
+.modal-card input, .modal-card select, .modal-card textarea { width: 100%; padding: 8px; margin-top: 4px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); }
+
+.profile-pic-container { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.profile-pic-container img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; }
+
+.compare-box { display: flex; gap: 10px; margin-top: 10px; }
+.compare-result-box { margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.03); border-radius: 8px; }
